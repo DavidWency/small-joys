@@ -128,7 +128,7 @@ const SmallJoysWall = () => {
     try {
       let photoUrl = '';
       
-      // 上传图片到 Supabase Storage
+      // 图片上传
       if (selectedImage) {
         const fileExt = selectedImage.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
@@ -144,7 +144,7 @@ const SmallJoysWall = () => {
         
         photoUrl = publicUrl;
       }
-
+      
       const { error } = await supabase
         .from('joys')
         .insert({
