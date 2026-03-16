@@ -160,6 +160,13 @@ const SmallJoysWall = () => {
       setSelectedImage(null);
       setImagePreview(null);
       setIsModalOpen(false);
+      
+      // 重新获取列表
+      const { data } = await supabase
+        .from('joys')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setJoys(data || []);
     } catch (error) {
       console.error('Error submitting joy:', error);
     } finally {
