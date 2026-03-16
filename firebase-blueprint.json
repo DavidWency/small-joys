@@ -1,0 +1,65 @@
+{
+  "entities": {
+    "Joy": {
+      "title": "Joy",
+      "description": "A small moment of gratitude shared on the wall.",
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string",
+          "description": "The text content of the gratitude message."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the joy was shared."
+        },
+        "color": {
+          "type": "string",
+          "description": "The background color of the joy card."
+        },
+        "font": {
+          "type": "string",
+          "description": "The font style of the joy card."
+        },
+        "photoUrl": {
+          "type": "string",
+          "description": "Optional URL to an uploaded photo."
+        },
+        "country": {
+          "type": "string",
+          "description": "Optional country of the user."
+        }
+      },
+      "required": ["content", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A user of the application (primarily for admin purposes).",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin", "user"],
+          "description": "The user's role."
+        }
+      },
+      "required": ["email", "role"]
+    }
+  },
+  "firestore": {
+    "/joys": {
+      "schema": "Joy",
+      "description": "Collection of shared small joys."
+    },
+    "/users": {
+      "schema": "User",
+      "description": "Collection of user profiles for admin access."
+    }
+  }
+}

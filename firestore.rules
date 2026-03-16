@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: joys
+    // Document ID: auto-generated
+    // Fields:
+    //   - content: string (required, 1-500 chars)
+    //   - createdAt: timestamp (required)
+    //   - color: string (optional)
+    //   - font: string (optional)
+    //
+    // Collection: users
+    // Document ID: userId
+    // Fields:
+    //   - email: string (required)
+    //   - role: string (required, 'admin' or 'user')
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "philip.lwj@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidJoy(data) {
+      return data.keys().hasAll(['content', 'createdAt']) &&
+             data.content is string && data.content.size() > 0 && data.content.size() <= 500 &&
+             data.createdAt is timestamp &&
+             (!('color' in data) || (data.color is string && data.color.size() <= 50)) &&
+             (!('font' in data) || (data.font is string && data.font.size() <= 50)) &&
+             (!('photoUrl' in data) || (data.photoUrl is string && data.photoUrl.size() <= 2000)) &&
+             (!('country' in data) || (data.country is string && data.country.size() <= 100)) &&
+             data.keys().hasOnly(['content', 'createdAt', 'color', 'font', 'photoUrl', 'country']);
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'role']) &&
+             data.email is string &&
+             data.role in ['admin', 'user'] &&
+             data.keys().hasOnly(['email', 'role']);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /joys/{joyId} {
+      allow read: if true;
+      allow create: if isValidJoy(request.resource.data) && 
+                      request.resource.data.createdAt == request.time;
+      allow update, delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create, update: if isAdmin() && isValidUser(request.resource.data);
+      allow delete: if isAdmin();
+    }
+  }
+}
